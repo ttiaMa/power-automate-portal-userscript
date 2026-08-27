@@ -29,7 +29,7 @@ La pagina ufficiale con le versioni per Edge, Chrome, Firefox e altri browser è
 
 ### 2. Installa PA Enhanced
 
-1. Apri il file [`power-automate-table-manager.user.js`](https://github.com/ttiaMa/power-automate-table-enhancer/raw/main/power-automate-table-manager.user.js).
+1. Apri il file [`power-automate-table-manager.user.js`](https://github.com/ttiaMa/power-automate-portal-userscript/raw/main/power-automate-table-manager.user.js).
 2. Violentmonkey mostrerà la schermata di installazione dello userscript.
 3. Controlla che il nome sia **PA Enhanced** e premi **Installa**.
 4. Apri o ricarica [Microsoft Power Automate](https://make.powerautomate.com/).
@@ -38,7 +38,7 @@ La pagina ufficiale con le versioni per Edge, Chrome, Firefox e altri browser è
 Se il file viene mostrato come semplice testo, apri Violentmonkey, premi **+**, scegli **Installa da URL** e incolla:
 
 ```text
-https://raw.githubusercontent.com/ttiaMa/power-automate-table-enhancer/main/power-automate-table-manager.user.js
+https://raw.githubusercontent.com/ttiaMa/power-automate-portal-userscript/main/power-automate-table-manager.user.js
 ```
 
 ## Aggiornamenti
@@ -86,7 +86,7 @@ In caso di malfunzionamento:
 1. Verifica che PA Enhanced sia abilitato nella dashboard di Violentmonkey.
 2. Ricarica completamente Power Automate.
 3. Prova **Ripristina questa vista** dal pannello.
-4. Se il problema continua, apri una [segnalazione su GitHub](https://github.com/ttiaMa/power-automate-table-enhancer/issues) indicando pagina interessata, browser e screenshot.
+4. Se il problema continua, apri una [segnalazione su GitHub](https://github.com/ttiaMa/power-automate-portal-userscript/issues) indicando pagina interessata, browser e screenshot.
 
 ## Autori
 
