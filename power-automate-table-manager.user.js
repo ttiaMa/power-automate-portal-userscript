@@ -4,10 +4,10 @@
 // @version      1.4.5
 // @description  Gestione avanzata delle colonne nelle griglie di Power Automate.
 // @author       Mattia + Solaria
-// @homepageURL  https://github.com/ttiaMa/power-automate-table-enhancer
-// @supportURL   https://github.com/ttiaMa/power-automate-table-enhancer/issues
-// @downloadURL  https://raw.githubusercontent.com/ttiaMa/power-automate-table-enhancer/main/power-automate-table-manager.user.js
-// @updateURL    https://raw.githubusercontent.com/ttiaMa/power-automate-table-enhancer/main/power-automate-table-manager.user.js
+// @homepageURL  https://github.com/ttiaMa/power-automate-portal-userscript
+// @supportURL   https://github.com/ttiaMa/power-automate-portal-userscript/issues
+// @downloadURL  https://raw.githubusercontent.com/ttiaMa/power-automate-portal-userscript/main/power-automate-table-manager.user.js
+// @updateURL    https://raw.githubusercontent.com/ttiaMa/power-automate-portal-userscript/main/power-automate-table-manager.user.js
 // @match        https://make.powerautomate.com/*
 // @run-at       document-idle
 // @grant        GM_getValue
@@ -457,7 +457,7 @@
     const savedOrder = store.layouts[state.schema];
     const hasCustomOrder = Array.isArray(savedOrder) && savedOrder.length > 0;
     state.order = mergeOrder(state.originalKeys, savedOrder);
-    const hidden = new Set((store.hidden[state.schema] || []).fi…57 tokens truncated…);
+    const hidden = new Set((store.hidden[state.schem…60 tokens truncated…);
     headers.forEach((header, index) => {
       if (!header.dataset.paTmHeader) header.dataset.paTmHeader = state.originalKeys[index];
       ensureHeaderControls(header, state, header.dataset.paTmHeader);
