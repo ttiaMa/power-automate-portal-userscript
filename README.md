@@ -1,8 +1,8 @@
 # PA Enhanced
 
-Userscript per migliorare la gestione delle tabelle di Microsoft Power Automate su `make.powerautomate.com`.
+Userscript per migliorare l’esperienza d’uso del portale Microsoft Power Automate su `make.powerautomate.com`.
 
-Versione corrente: **1.4.5**.
+Versione corrente: **1.4.6**.
 
 ## Funzioni principali
 
@@ -16,14 +16,14 @@ Versione corrente: **1.4.5**.
 - Clic automatico opzionale su **Show more** per espandere gli elementi mostrati.
 - Esportazione e importazione della configurazione.
 
-## Installazione con Violentmonkey su Microsoft Edge
+## Installazione con Violentmonkey
 
 ### 1. Installa Violentmonkey
 
-1. Apri la pagina [Violentmonkey su Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/eeagobfjdenkkddmbclomhiblgggliao).
-2. Premi **Ottieni**.
-3. Conferma scegliendo **Aggiungi estensione**.
-4. Se vuoi averla sempre a portata di mano, apri il menu **Estensioni** di Edge e fissa Violentmonkey alla barra degli strumenti.
+- **Microsoft Edge:** apri [Violentmonkey su Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/eeagobfjdenkkddmbclomhiblgggliao), premi **Ottieni** e conferma con **Aggiungi estensione**.
+- **Google Chrome:** apri [Violentmonkey sul Chrome Web Store](https://chromewebstore.google.com/detail/violentmonkey/jinjaccalgkegednnccohejagnlnfdag), premi **Aggiungi** e conferma con **Aggiungi estensione**.
+
+Se vuoi averla sempre a portata di mano, apri il menu **Estensioni** del browser e fissa Violentmonkey alla barra degli strumenti.
 
 La pagina ufficiale con le versioni per Edge, Chrome, Firefox e altri browser è disponibile in [Get Violentmonkey](https://violentmonkey.github.io/get-it/).
 
@@ -87,8 +87,4 @@ In caso di malfunzionamento:
 2. Ricarica completamente Power Automate.
 3. Prova **Ripristina questa vista** dal pannello.
 4. Se il problema continua, apri una [segnalazione su GitHub](https://github.com/ttiaMa/power-automate-portal-userscript/issues) indicando pagina interessata, browser e screenshot.
-
-## Autori
-
-**Mattia + Solaria**
 
