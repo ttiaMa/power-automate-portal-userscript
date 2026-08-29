@@ -23,6 +23,8 @@ Versione corrente: **1.4.6**.
 - **Microsoft Edge:** apri [Violentmonkey su Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/eeagobfjdenkkddmbclomhiblgggliao), premi **Ottieni** e conferma con **Aggiungi estensione**.
 - **Google Chrome:** apri [Violentmonkey sul Chrome Web Store](https://chromewebstore.google.com/detail/violentmonkey/jinjaccalgkegednnccohejagnlnfdag), premi **Aggiungi** e conferma con **Aggiungi estensione**.
 
+Al termine dell'installazione, apri `edge://extensions` in Edge oppure `chrome://extensions` in Chrome, seleziona **Dettagli** sotto Violentmonkey e attiva **Consenti script utente**. In **Accesso al sito**, consenti inoltre all'estensione di leggere e modificare i dati su `https://make.powerautomate.com`.
+
 Se vuoi averla sempre a portata di mano, apri il menu **Estensioni** del browser e fissa Violentmonkey alla barra degli strumenti.
 
 La pagina ufficiale con le versioni per Edge, Chrome, Firefox e altri browser è disponibile in [Get Violentmonkey](https://violentmonkey.github.io/get-it/).
