@@ -2,7 +2,7 @@
 
 Userscript per migliorare l’esperienza d’uso del portale Microsoft Power Automate su `make.powerautomate.com`.
 
-Versione corrente: **1.4.7**.
+Versione corrente: **1.4.8**.
 
 ## Funzioni principali
 
@@ -13,7 +13,7 @@ Versione corrente: **1.4.7**.
 - Possibilità di nascondere una colonna e ripristinarla subito tramite **Annulla**.
 - Ripristino di tutte le colonne nascoste senza perdere ordine e larghezze.
 - Apertura diretta della scheda **Items** dalla lista delle work queue.
-- Clic automatico opzionale su **Show more** per espandere gli elementi mostrati.
+- Clic automatici ripetuti e opzionali su **Show more** per espandere tutti gli elementi disponibili.
 - Esportazione e importazione della configurazione.
 - Pulsante **PA Enhanced** trascinabile, con posizione salvata nel browser.
 
@@ -63,7 +63,7 @@ Per controllare manualmente:
 - Passa sull’intestazione e premi **Hide** per nascondere la colonna nella sola visualizzazione.
 - La notifica resta visibile per 10 secondi e permette di annullare immediatamente l’operazione.
 - Il pannello elenca le colonne nascoste; **Mostra tutte le colonne nascoste** le ripristina mantenendo ordine e larghezze.
-- Con **Premi automaticamente Show more**, se il tasto è presente al termine della tabella, verrà cliccato automaticamente per espandere gli elementi mostrati.
+- Con **Premi automaticamente Show more**, il tasto presente al termine della tabella viene cliccato più volte, con un intervallo tra i caricamenti, finché non restano altri elementi da espandere.
 - Nella pagina principale **Work queues**, il collegamento **Items →** apre direttamente gli item della coda.
 - Da tastiera, focalizza la maniglia e usa `Alt+Shift+←` oppure `Alt+Shift+→`.
 
