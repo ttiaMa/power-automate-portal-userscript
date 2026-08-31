@@ -2,7 +2,7 @@
 
 Userscript per migliorare l’esperienza d’uso del portale Microsoft Power Automate su `make.powerautomate.com`.
 
-Versione corrente: **1.4.8**.
+Versione corrente: **1.4.9**.
 
 ## Funzioni principali
 
