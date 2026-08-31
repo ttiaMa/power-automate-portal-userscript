@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PA Enhanced
 // @namespace    local.powerautomate.tablemanager
-// @version      1.4.7
+// @version      1.4.8
 // @description  Migliora l'esperienza d'uso del portale Microsoft Power Automate.
 // @author       ttiaMa
 // @homepageURL  https://github.com/ttiaMa/power-automate-portal-userscript
@@ -26,9 +26,9 @@
   let scanQueued = false;
   let nextGridToken = 1;
   let autoShowMoreRoute = '';
-  let autoShowMoreReadyAt = 0;
   let autoShowMoreTimer = null;
-  let autoShowMoreClickedForRoute = false;
+  let autoShowMoreClickCount = 0;
+  const AUTO_SHOW_MORE_DELAY = 4000;
 
   const css = `
     [data-pa-tm-header] { position: relative !important; }
@@ -459,9 +459,7 @@
       ...order.map((key) => byKey.get(key)).filter(Boolean),
       ...headers.filter((header) => !order.includes(header.dataset.paTmHeader)),
     ];
-    if (desired.every((header, index) => head…1114 tokens truncated…Width + moveEvent.clientX - startX));
-      setWidth(header, width);
-      state.grid.querySelectorAll(`[data-pa-tm-cell="${CSS.escape(key)}"]`).forEach((cell) => setWidth(cell, width));
+    if (desired.every((header, index) => headers…1148 tokens truncated…}"]`).forEach((cell) => setWidth(cell, width));
     };
     const end = (upEvent) => {
       window.removeEventListener('pointermove', move, true);
@@ -604,20 +602,33 @@
     if (autoShowMoreTimer) clearTimeout(autoShowMoreTimer);
     autoShowMoreTimer = null;
     autoShowMoreRoute = '';
-    autoShowMoreReadyAt = 0;
-    autoShowMoreClickedForRoute = false;
+    autoShowMoreClickCount = 0;
+  }
+
+  function scheduleAutoShowMore(route, delay = AUTO_SHOW_MORE_DELAY) {
+    if (autoShowMoreTimer || route !== currentRouteKey()) return;
+    autoShowMoreTimer = setTimeout(() => {
+      autoShowMoreTimer = null;
+      tryAutoShowMore(route);
+    }, delay);
   }
 
   function tryAutoShowMore(route) {
-    if (route !== currentRouteKey() || autoShowMoreClickedForRoute) return;
-    if (!readStore().settings.autoShowMore || Date.now() < autoShowMoreReadyAt) return;
+    if (route !== currentRouteKey() || !readStore().settings.autoShowMore) return;
     const button = document.querySelector(
       'button[data-automation-id="showMoreButton"], button[data-automationid="showMoreButton"]',
     );
-    if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true') return;
-    autoShowMoreClickedForRoute = true;
+    if (!button) return;
+    if (button.disabled || button.getAttribute('aria-disabled') === 'true') {
+      scheduleAutoShowMore(route);
+      return;
+    }
     button.click();
-    toast('“Show more” premuto automaticamente', { duration: 5000 });
+    autoShowMoreClickCount += 1;
+    if (autoShowMoreClickCount === 1) {
+      toast('Espansione automatica della tabella in corso…', { duration: 5000 });
+    }
+    scheduleAutoShowMore(route);
   }
 
   function syncAutoShowMore() {
@@ -629,15 +640,12 @@
     if (route !== autoShowMoreRoute) {
       if (autoShowMoreTimer) clearTimeout(autoShowMoreTimer);
       autoShowMoreRoute = route;
-      autoShowMoreReadyAt = Date.now() + 4000;
-      autoShowMoreClickedForRoute = false;
-      autoShowMoreTimer = setTimeout(() => {
-        autoShowMoreTimer = null;
-        tryAutoShowMore(route);
-      }, 4000);
+      autoShowMoreClickCount = 0;
+      autoShowMoreTimer = null;
+      scheduleAutoShowMore(route);
       return;
     }
-    if (!autoShowMoreTimer && Date.now() >= autoShowMoreReadyAt) tryAutoShowMore(route);
+    scheduleAutoShowMore(route);
   }
 
   function setAutoShowMore(enabled) {
@@ -844,7 +852,7 @@
           <input id="pa-tm-auto-show-more" type="checkbox">
           <span>Premi automaticamente <b>Show more</b></span>
         </label>
-        <small>Se il tasto è presente al termine della tabella, verrà cliccato automaticamente per espandere gli elementi mostrati.</small>
+        <small>Se il tasto è presente al termine della tabella, verrà cliccato automaticamente più volte fino a espandere tutti gli elementi disponibili.</small>
       </div>
       <div class="pa-tm-actions">
         <button type="button" class="pa-tm-wide" data-action="show-hidden">Mostra tutte le colonne nascoste</button>
