@@ -38,6 +38,16 @@ La pagina ufficiale con le versioni per Edge, Chrome, Firefox e altri browser è
 4. Apri o ricarica [Microsoft Power Automate](https://make.powerautomate.com/).
 5. In basso a destra comparirà il pulsante blu **PA Enhanced**.
 
+#### Attiva gli aggiornamenti automatici
+
+1. Installa PA Enhanced usando il collegamento indicato sopra, senza copiare manualmente il codice in un nuovo script: in questo modo Violentmonkey conserva l'indirizzo dal quale verificare le nuove versioni.
+2. Apri la **Dashboard** di Violentmonkey e individua **PA Enhanced**.
+3. Apri le impostazioni dello script e verifica che **Controlla aggiornamenti** sia attivo; normalmente è già abilitato dopo l'installazione.
+4. Nelle impostazioni generali di Violentmonkey verifica che l'intervallo per il controllo degli aggiornamenti non sia disattivato.
+5. Da questo momento non devi reinstallare lo script: Violentmonkey confronterà periodicamente `@version` e, quando sarà disponibile una versione più recente, la scaricherà tramite `@updateURL` e `@downloadURL`.
+
+Gli indirizzi di aggiornamento sono già inclusi nei metadati di PA Enhanced e puntano sempre al file presente nel ramo `main` di questo repository.
+
 Se il file viene mostrato come semplice testo, apri Violentmonkey, premi **+**, scegli **Installa da URL** e incolla:
 
 ```text
