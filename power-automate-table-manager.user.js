@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PA Enhanced
 // @namespace    local.powerautomate.tablemanager
-// @version      1.4.6
+// @version      1.4.7
 // @description  Migliora l'esperienza d'uso del portale Microsoft Power Automate.
 // @author       ttiaMa
 // @homepageURL  https://github.com/ttiaMa/power-automate-portal-userscript
@@ -76,8 +76,10 @@
       position: fixed; right: 18px; bottom: 18px; z-index: 2147483646;
       border: 0; border-radius: 18px; padding: 8px 13px;
       color: white; background: #0078d4; box-shadow: 0 2px 8px #0004;
-      font: 600 12px/20px "Segoe UI", sans-serif; cursor: pointer;
+      font: 600 12px/20px "Segoe UI", sans-serif; cursor: grab;
+      touch-action: none; user-select: none;
     }
+    #pa-tm-button.pa-tm-dragging { cursor: grabbing; }
     #pa-tm-panel {
       position: fixed; right: 18px; bottom: 62px; z-index: 2147483647;
       width: 310px; padding: 14px; border: 1px solid #d1d1d1; border-radius: 8px;
@@ -145,12 +147,22 @@
         widths: value.widths && typeof value.widths === 'object' ? value.widths : {},
         hidden: value.hidden && typeof value.hidden === 'object' ? value.hidden : {},
         settings: value.settings && typeof value.settings === 'object'
-          ? { autoShowMore: value.settings.autoShowMore === true }
-          : { autoShowMore: false },
+          ? {
+            autoShowMore: value.settings.autoShowMore === true,
+            buttonPosition: value.settings.buttonPosition
+              && Number.isFinite(value.settings.buttonPosition.x)
+              && Number.isFinite(value.settings.buttonPosition.y)
+              ? { x: value.settings.buttonPosition.x, y: value.settings.buttonPosition.y }
+              : null,
+          }
+          : { autoShowMore: false, buttonPosition: null },
       };
     } catch (error) {
       console.warn('[PA Enhanced] Cache non leggibile:', error);
-      return { layouts: {}, widths: {}, hidden: {}, settings: { autoShowMore: false } };
+      return {
+        layouts: {}, widths: {}, hidden: {},
+        settings: { autoShowMore: false, buttonPosition: null },
+      };
     }
   }
 
@@ -447,117 +459,7 @@
       ...order.map((key) => byKey.get(key)).filter(Boolean),
       ...headers.filter((header) => !order.includes(header.dataset.paTmHeader)),
     ];
-    if (desired.every((header, index) => headers[index] === header)) return;
-    desired.forEach((header) => headerRow.appendChild(header));
-  }
-
-  function applyState(state) {
-    if (!state.grid.isConnected || !state.headerRow.isConnected) return;
-    const store = readStore();
-    const savedOrder = store.layouts[state.schema];
-    const hasCustomOrder = Array.isArray(savedOrder) && savedOrder.length > 0;
-    state.order = mergeOrder(state.originalKeys, savedOrder);
-    const hidden = new Set((store.hidden[state.schema] || [])…58 tokens truncated…);
-    headers.forEach((header, index) => {
-      if (!header.dataset.paTmHeader) header.dataset.paTmHeader = state.originalKeys[index];
-      ensureHeaderControls(header, state, header.dataset.paTmHeader);
-      const key = header.dataset.paTmHeader;
-      setColumnPresentation(header, key, orderIndex?.get(key), hidden.has(key), store.widths[key]);
-    });
-    // Fluent UI non applica sempre `order` al contenitore delle intestazioni.
-    // Le intestazioni vengono quindi riallineate anche nel DOM, mentre le celle
-    // restano ordinate via CSS per non interferire con la virtualizzazione React.
-    if (hasCustomOrder) reorderHeaders(state.headerRow, headers, state.order);
-
-    const rows = Array.from(state.grid.querySelectorAll('[role="row"]')).filter((row) => row !== state.headerRow);
-    rows.forEach((row) => {
-      const cells = keyCells(row, state);
-      cells.forEach((cell) => {
-        const key = cell.dataset.paTmCell;
-        cell.setAttribute('data-pa-tm-cell', key);
-        setColumnPresentation(cell, key, orderIndex?.get(key), hidden.has(key), store.widths[key]);
-        const text = cell.innerText?.trim();
-        if (text && cell.scrollWidth > cell.clientWidth + 2 && !cell.title) cell.title = text;
-      });
-      if (hasCustomOrder) markUnmappedCells(row);
-    });
-
-  }
-
-  function saveOrder(state, order) {
-    const store = readStore();
-    store.layouts[state.schema] = mergeOrder(state.originalKeys, order);
-    writeStore(store);
-    applyState(state);
-    refreshPersistentStyles();
-    updatePanel();
-  }
-
-  function saveWidth(state, key, width) {
-    const store = readStore();
-    store.widths[key] = Math.round(Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, width)));
-    writeStore(store);
-    applyState(state);
-    refreshPersistentStyles();
-    updatePanel();
-  }
-
-  function hideColumn(state, key) {
-    if (isSelectionKey(key)) return;
-    const store = readStore();
-    const hidden = new Set(store.hidden[state.schema] || []);
-    hidden.add(key);
-    store.hidden[state.schema] = [...hidden];
-    writeStore(store);
-    applyState(state);
-    refreshPersistentStyles();
-    updatePanel();
-    toast(`Colonna nascosta: ${cleanColumnLabel(state.labels[key] || key)}`, {
-      duration: 10000,
-      actionLabel: 'Annulla',
-      onAction: () => showColumn(state.schema, key),
-    });
-  }
-
-  function showColumn(schema, key) {
-    const store = readStore();
-    store.hidden[schema] = (store.hidden[schema] || []).filter((item) => item !== key);
-    if (!store.hidden[schema].length) delete store.hidden[schema];
-    writeStore(store);
-    activeStates().filter((state) => state.schema === schema).forEach(applyState);
-    refreshPersistentStyles();
-    updatePanel();
-    toast('Colonna ripristinata');
-  }
-
-  function showAllHiddenVisible() {
-    const store = readStore();
-    const schemas = new Set(activeStates().map((state) => state.schema));
-    let restored = 0;
-    schemas.forEach((schema) => {
-      restored += (store.hidden[schema] || []).length;
-      delete store.hidden[schema];
-    });
-    if (!restored) {
-      toast('Nessuna colonna nascosta in questa vista');
-      return;
-    }
-    writeStore(store);
-    activeStates().forEach(applyState);
-    refreshPersistentStyles();
-    updatePanel();
-    toast(`${restored} colonne ripristinate; ordine e larghezze invariati`);
-  }
-
-  function beginResize(event, state, key, header) {
-    if (event.button !== 0) return;
-    event.preventDefault();
-    event.stopPropagation();
-    const startX = event.clientX;
-    const startWidth = header.getBoundingClientRect().width;
-    document.body.classList.add('pa-tm-resizing');
-    const move = (moveEvent) => {
-      const width = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, startWidth + moveEvent.clientX - startX));
+    if (desired.every((header, index) => head…1114 tokens truncated…Width + moveEvent.clientX - startX));
       setWidth(header, width);
       state.grid.querySelectorAll(`[data-pa-tm-cell="${CSS.escape(key)}"]`).forEach((cell) => setWidth(cell, width));
     };
@@ -807,7 +709,14 @@
         layouts: value.layouts,
         widths: value.widths,
         hidden: value.hidden || {},
-        settings: { autoShowMore: value.settings?.autoShowMore === true },
+        settings: {
+          autoShowMore: value.settings?.autoShowMore === true,
+          buttonPosition: value.settings?.buttonPosition
+            && Number.isFinite(value.settings.buttonPosition.x)
+            && Number.isFinite(value.settings.buttonPosition.y)
+            ? value.settings.buttonPosition
+            : null,
+        },
       });
       toast('Configurazione importata');
       location.reload();
@@ -915,7 +824,7 @@
     button.id = 'pa-tm-button';
     button.type = 'button';
     button.textContent = 'PA Enhanced';
-    button.title = 'Funzioni avanzate per Power Automate';
+    button.title = 'Trascina per spostare; clicca per aprire PA Enhanced';
 
     const panel = document.createElement('section');
     panel.id = 'pa-tm-panel';
@@ -945,9 +854,85 @@
         <button type="button" data-action="import">Importa layout</button>
       </div>`;
 
+    const clamp = (value, min, max) => Math.min(Math.max(value, min), Math.max(min, max));
+    const positionPanel = () => {
+      if (panel.hidden) return;
+      const buttonRect = button.getBoundingClientRect();
+      const panelRect = panel.getBoundingClientRect();
+      const margin = 8;
+      const maxLeft = window.innerWidth - panelRect.width - margin;
+      const maxTop = window.innerHeight - panelRect.height - margin;
+      const left = clamp(buttonRect.right - panelRect.width, margin, maxLeft);
+      const above = buttonRect.top - panelRect.height - margin;
+      const below = buttonRect.bottom + margin;
+      const top = clamp(above >= margin ? above : below, margin, maxTop);
+      panel.style.left = `${Math.round(left)}px`;
+      panel.style.top = `${Math.round(top)}px`;
+      panel.style.right = 'auto';
+      panel.style.bottom = 'auto';
+    };
+    const positionButton = (x, y) => {
+      const rect = button.getBoundingClientRect();
+      const margin = 8;
+      const next = {
+        x: clamp(x, margin, window.innerWidth - rect.width - margin),
+        y: clamp(y, margin, window.innerHeight - rect.height - margin),
+      };
+      button.style.left = `${Math.round(next.x)}px`;
+      button.style.top = `${Math.round(next.y)}px`;
+      button.style.right = 'auto';
+      button.style.bottom = 'auto';
+      positionPanel();
+      return next;
+    };
+    const saveButtonPosition = (position) => {
+      const store = readStore();
+      store.settings.buttonPosition = {
+        x: Math.round(position.x),
+        y: Math.round(position.y),
+      };
+      writeStore(store);
+    };
+
+    let ignoreNextClick = false;
+    button.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0) return;
+      const startX = event.clientX;
+      const startY = event.clientY;
+      const startRect = button.getBoundingClientRect();
+      let moved = false;
+      let current = { x: startRect.left, y: startRect.top };
+
+      const move = (moveEvent) => {
+        const deltaX = moveEvent.clientX - startX;
+        const deltaY = moveEvent.clientY - startY;
+        if (!moved && Math.hypot(deltaX, deltaY) < 4) return;
+        moved = true;
+        moveEvent.preventDefault();
+        button.classList.add('pa-tm-dragging');
+        current = positionButton(startRect.left + deltaX, startRect.top + deltaY);
+      };
+      const end = () => {
+        window.removeEventListener('pointermove', move, true);
+        window.removeEventListener('pointerup', end, true);
+        window.removeEventListener('pointercancel', end, true);
+        button.classList.remove('pa-tm-dragging');
+        if (!moved) return;
+        saveButtonPosition(current);
+        ignoreNextClick = true;
+        setTimeout(() => { ignoreNextClick = false; }, 0);
+      };
+
+      window.addEventListener('pointermove', move, true);
+      window.addEventListener('pointerup', end, true);
+      window.addEventListener('pointercancel', end, true);
+    });
+
     button.addEventListener('click', () => {
+      if (ignoreNextClick) return;
       panel.hidden = !panel.hidden;
       updatePanel();
+      requestAnimationFrame(positionPanel);
     });
     panel.querySelector('#pa-tm-auto-show-more').addEventListener('change', (event) => {
       setAutoShowMore(event.target.checked);
@@ -964,6 +949,13 @@
       if (action === 'show-hidden') showAllHiddenVisible();
     });
     document.body.append(button, panel);
+    const savedPosition = readStore().settings.buttonPosition;
+    if (savedPosition) requestAnimationFrame(() => positionButton(savedPosition.x, savedPosition.y));
+    window.addEventListener('resize', () => {
+      const rect = button.getBoundingClientRect();
+      const adjusted = positionButton(rect.left, rect.top);
+      if (readStore().settings.buttonPosition) saveButtonPosition(adjusted);
+    });
     updatePanel();
   }
 
