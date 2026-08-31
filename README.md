@@ -2,7 +2,7 @@
 
 Userscript per migliorare l’esperienza d’uso del portale Microsoft Power Automate su `make.powerautomate.com`.
 
-Versione corrente: **1.4.6**.
+Versione corrente: **1.4.7**.
 
 ## Funzioni principali
 
@@ -15,6 +15,7 @@ Versione corrente: **1.4.6**.
 - Apertura diretta della scheda **Items** dalla lista delle work queue.
 - Clic automatico opzionale su **Show more** per espandere gli elementi mostrati.
 - Esportazione e importazione della configurazione.
+- Pulsante **PA Enhanced** trascinabile, con posizione salvata nel browser.
 
 ## Installazione con Violentmonkey
 
@@ -55,6 +56,7 @@ Per controllare manualmente:
 
 ## Utilizzo
 
+- Trascina il pulsante **PA Enhanced** per spostarlo in un punto libero della pagina; la posizione resta salvata e il pannello si apre vicino al pulsante.
 - Passa il mouse sull’intestazione e trascina la maniglia `⋮⋮` per spostare la colonna.
 - Trascina il bordo destro dell’intestazione per ridimensionarla.
 - Fai doppio clic sul bordo destro per adattare la larghezza al contenuto visibile.
