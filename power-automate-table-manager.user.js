@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PA Enhanced
 // @namespace    local.powerautomate.tablemanager
-// @version      1.4.8
+// @version      1.4.9
 // @description  Migliora l'esperienza d'uso del portale Microsoft Power Automate.
 // @author       ttiaMa
 // @homepageURL  https://github.com/ttiaMa/power-automate-portal-userscript
@@ -459,7 +459,124 @@
       ...order.map((key) => byKey.get(key)).filter(Boolean),
       ...headers.filter((header) => !order.includes(header.dataset.paTmHeader)),
     ];
-    if (desired.every((header, index) => headers…1148 tokens truncated…}"]`).forEach((cell) => setWidth(cell, width));
+    if (desired.every((header, index) => headers[index] === header)) return;
+    desired.forEach((header) => headerRow.appendChild(header));
+  }
+
+  function applyState(state) {
+    if (!state.grid.isConnected || !state.headerRow.isConnected) return;
+    const store = readStore();
+    const savedOrder = store.layouts[state.schema];
+    const hasCustomOrder = Array.isArray(savedOrder) && savedOrder.length > 0;
+    state.order = mergeOrder(state.originalKeys, savedOrder);
+    const hidden = new Set((store.hidden[state.schema] || []).filter((key) => !isSelectionKey(key)));
+    const orderIndex = hasCustomOrder
+      ? new Map(state.order.map((key, index) => [key, index]))
+      : null;
+
+    const headers = directChildrenByRole(state.headerRow, ['columnheader']);
+    headers.forEach((header, index) => {
+      if (!header.dataset.paTmHeader) header.dataset.paTmHeader = state.originalKeys[index];
+      ensureHeaderControls(header, state, header.dataset.paTmHeader);
+      const key = header.dataset.paTmHeader;
+      setColumnPresentation(header, key, orderIndex?.get(key), hidden.has(key), store.widths[key]);
+    });
+    // Fluent UI non applica sempre `order` al contenitore delle intestazioni.
+    // Le intestazioni vengono quindi riallineate anche nel DOM, mentre le celle
+    // restano ordinate via CSS per non interferire con la virtualizzazione React.
+    if (hasCustomOrder) reorderHeaders(state.headerRow, headers, state.order);
+
+    const rows = Array.from(state.grid.querySelectorAll('[role="row"]')).filter((row) => row !== state.headerRow);
+    rows.forEach((row) => {
+      const cells = keyCells(row, state);
+      cells.forEach((cell) => {
+        const key = cell.dataset.paTmCell;
+        cell.setAttribute('data-pa-tm-cell', key);
+        setColumnPresentation(cell, key, orderIndex?.get(key), hidden.has(key), store.widths[key]);
+        const text = cell.innerText?.trim();
+        if (text && cell.scrollWidth > cell.clientWidth + 2 && !cell.title) cell.title = text;
+      });
+      if (hasCustomOrder) markUnmappedCells(row);
+    });
+
+  }
+
+  function saveOrder(state, order) {
+    const store = readStore();
+    store.layouts[state.schema] = mergeOrder(state.originalKeys, order);
+    writeStore(store);
+    applyState(state);
+    refreshPersistentStyles();
+    updatePanel();
+  }
+
+  function saveWidth(state, key, width) {
+    const store = readStore();
+    store.widths[key] = Math.round(Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, width)));
+    writeStore(store);
+    applyState(state);
+    refreshPersistentStyles();
+    updatePanel();
+  }
+
+  function hideColumn(state, key) {
+    if (isSelectionKey(key)) return;
+    const store = readStore();
+    const hidden = new Set(store.hidden[state.schema] || []);
+    hidden.add(key);
+    store.hidden[state.schema] = [...hidden];
+    writeStore(store);
+    applyState(state);
+    refreshPersistentStyles();
+    updatePanel();
+    toast(`Colonna nascosta: ${cleanColumnLabel(state.labels[key] || key)}`, {
+      duration: 10000,
+      actionLabel: 'Annulla',
+      onAction: () => showColumn(state.schema, key),
+    });
+  }
+
+  function showColumn(schema, key) {
+    const store = readStore();
+    store.hidden[schema] = (store.hidden[schema] || []).filter((item) => item !== key);
+    if (!store.hidden[schema].length) delete store.hidden[schema];
+    writeStore(store);
+    activeStates().filter((state) => state.schema === schema).forEach(applyState);
+    refreshPersistentStyles();
+    updatePanel();
+    toast('Colonna ripristinata');
+  }
+
+  function showAllHiddenVisible() {
+    const store = readStore();
+    const schemas = new Set(activeStates().map((state) => state.schema));
+    let restored = 0;
+    schemas.forEach((schema) => {
+      restored += (store.hidden[schema] || []).length;
+      delete store.hidden[schema];
+    });
+    if (!restored) {
+      toast('Nessuna colonna nascosta in questa vista');
+      return;
+    }
+    writeStore(store);
+    activeStates().forEach(applyState);
+    refreshPersistentStyles();
+    updatePanel();
+    toast(`${restored} colonne ripristinate; ordine e larghezze invariati`);
+  }
+
+  function beginResize(event, state, key, header) {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const startX = event.clientX;
+    const startWidth = header.getBoundingClientRect().width;
+    document.body.classList.add('pa-tm-resizing');
+    const move = (moveEvent) => {
+      const width = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, startWidth + moveEvent.clientX - startX));
+      setWidth(header, width);
+      state.grid.querySelectorAll(`[data-pa-tm-cell="${CSS.escape(key)}"]`).forEach((cell) => setWidth(cell, width));
     };
     const end = (upEvent) => {
       window.removeEventListener('pointermove', move, true);
@@ -973,4 +1090,3 @@
   scheduleScan();
   window.addEventListener('popstate', scheduleScan);
 })();
-
