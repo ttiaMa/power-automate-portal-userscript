@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         PA Enhanced
 // @namespace    local.powerautomate.tablemanager
-// @version      1.4.9
+// @version      1.4.10
 // @description  Migliora l'esperienza d'uso del portale Microsoft Power Automate.
 // @author       ttiaMa
 // @homepageURL  https://github.com/ttiaMa/power-automate-portal-userscript
@@ -1018,6 +1018,19 @@
       };
       writeStore(store);
     };
+    const restoreDefaultButtonPosition = () => {
+      button.style.removeProperty('left');
+      button.style.removeProperty('top');
+      button.style.removeProperty('right');
+      button.style.removeProperty('bottom');
+
+      const store = readStore();
+      if (store.settings.buttonPosition) {
+        store.settings.buttonPosition = null;
+        writeStore(store);
+      }
+      requestAnimationFrame(positionPanel);
+    };
 
     let ignoreNextClick = false;
     button.addEventListener('pointerdown', (event) => {
@@ -1076,10 +1089,17 @@
     document.body.append(button, panel);
     const savedPosition = readStore().settings.buttonPosition;
     if (savedPosition) requestAnimationFrame(() => positionButton(savedPosition.x, savedPosition.y));
+    let resizeTimer = null;
+    let viewportWidth = window.innerWidth;
+    let viewportHeight = window.innerHeight;
     window.addEventListener('resize', () => {
-      const rect = button.getBoundingClientRect();
-      const adjusted = positionButton(rect.left, rect.top);
-      if (readStore().settings.buttonPosition) saveButtonPosition(adjusted);
+      const nextWidth = window.innerWidth;
+      const nextHeight = window.innerHeight;
+      if (nextWidth === viewportWidth && nextHeight === viewportHeight) return;
+      viewportWidth = nextWidth;
+      viewportHeight = nextHeight;
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(restoreDefaultButtonPosition, 200);
     });
     updatePanel();
   }
